@@ -1,0 +1,96 @@
+oVirt（open Virtualization）是类似于VMware的vSphere，基于KVM(Kernel-based Virtual Machine)虚拟化技术的开源IaaS云服务解决方案。
+oVirt是Red Hat Enterprise Virtualization产品的基石，是RHEV的一个上游项目，新特性都是先在oVirt上开发，之后才会出现在企业版的产品中。
+
+社区IRC：irc.oftc.net服务器，#ovirt频道
+
+**oVirt的特性：**
+> * 管理多个虚拟节点
+> * 多样化的用户接口，可以提供对数据中心各种各样的管理
+> * 提供在Host上创建虚拟机的多种选择：manual, "optimised", pinned
+> * 虚拟机的动态迁移，从一个Hypervisor到另一个Hypervisor
+> * 简单并集中增加新的Hypervisor节点
+> * 监测VMs的资源使用情况
+> * 管理资源的配额（storage, compute, network）
+> * 自助服务控制台提供简单或高级的用例
+> * 基于KVM Hypervisor
+> * 开源
+
+**oVirt架构:**
+oVirt在架构上使用了Node/Engine分离结构以便功能的划分与管理，其架构图如下：
+
+![oVirt](http://img.blog.csdn.net/20151023181703782)
+
+包含：
+>* Host: 运行Hypervisor的Server，oVirt的Hypervisor是KVM。
+>* Agent and tools: 运行在Host上的包括VDSM（Virtual Desktop Server Manager），QEMU和libvirt。这些工具提供了虚拟机、网路以及存储的本地管理。
+>* oVirt: 一个oVirt环境的集中管理平台。它提供了一个图形界面，以便查看，提供以及管理资源
+>* Storage Domain: 在上图中并没有显示出来，在[RHEV的架构图](http://www.virtualizationmatrix.com/wordpress/wp-content/uploads/2013/03/RHEV_Platform.png)中是有这个组件的，它保存虚拟资源如：VM，templates, ISOs等。
+>* A database: 用来跟踪环境的状态变化，这里用PostgreSQL，OpenStack中默认使用MySQL。
+>* 提供外部的Directory Server的访问，以此来提供用户以及授权。
+>* 网络用来将整个环境连接在一起，包括物理网络连接和逻辑网络。
+
+从上图中还可以看出，oVirt系统包含至少一个oVirt节点（Engine）以及至少一个Host节点（Node）。下面来分别介绍一下oVirt的Engine和Node。
+
+oVirt Engine通过HTTP协议向外提供HTTP API，同时提供内建的网页服务供用户和系统管理员使用。系统管理员通过网页可以创建、修改虚拟机及相关设备或权限，用户在拥有权限的情况下可以操作自己的虚拟机，并通过VNC、SPICE或SSH登陆自己的虚拟机。
+Engine在整个系统中充当管理者的角色并对外提供管理服务，它挂载了自己的数据库记录整个系统中所有的虚拟机配置，各个节点的自身状态，系统的网络状态，存储器状态，管理的逻辑，状态及策略全部在Engine中设置。
+
+Node只负责功能上的实现，不进行任何状态的记录和任何策略的实现。
+
+Node与Engine之间的关系十分像Linux中驱动与应用程序的分割关系：驱动仅仅负责功能的实现，如设备的读、写、开启与关闭，如何使用这些功能留给应用层。同样Node仅仅负责实现虚拟机与设备的创建与修改，资源的共享与保护，如何使用这些功能交给Engine处理。
+
+Node暴露两种基于网络的API与Engine交互，XMLRP与REST。Engine通过这些接口控制各个Node上功能的启用。当然也可以调用这些API进行第三方程序的开发。
+
+Node可以由一个普通的Linux装上VDSM（Virtual Desktop Server Manager）构成，也可以有一个专为oVirt定制的Linux系统构成，在定制的情况下，Node上的许多文件都是ramdisk（基于内存的Linux磁盘设备），系统重启后其中的内容消失，保证了系统的无状态性。Node通过网络连接到SAN（Storage Area Network）上，VDSM把Node上运行的虚拟机存储数据保存在SAN上，Node本身为无状态节点。
+
+oVirt提供了可在Host运行的镜像ovirt-node，它是基于KVM和Linux技术的一套最小化的Fedora系统，它只提供最基本的操作系统功能以及虚拟机管理（包括libvirt/vdsm/kvm），在整个虚拟化系统中充当虚拟机管理器（Hypervisor）host的角色。它具有小巧，灵活，方便定制等特点。
+
+
+**安装oVirt Engine:**
+> 首先需要一个CentOS环境，我使用的是CentOS7
+> \#yum -y update&nbsp;&nbsp;&nbsp;&nbsp;// 更新系统并reboot
+> \#yum install http://plain.resources.ovirt.org/pub/yum-repo/ovirt-release35.rpm &nbsp;&nbsp;&nbsp;&nbsp;//订阅oVirt项目仓库
+> \#yum install nfs-utils
+> \#yum -y install ovirt-engine
+> \#engine-setup
+
+在最后一步遇到了一些错误：
+> [ INFO  ] Restarting nfs services
+>[ ERROR ] Failed to execute stage 'Closing up': Command '/bin/systemctl' failed to execute
+
+网上有对应的解决办法，如重启rpcbind服务。我重新运行了一下engine-setup同样完成了安装。
+
+现在只需要在有浏览器的机器上输入Engine的地址（如 https://192.168.8.89/ovirt-engine/）就会出现如下界面：
+
+![ovirt-engine](http://img.blog.csdn.net/20151023211446934)
+
+可以选择用户门户或管理员门户，选择管理员门户进行登录，用户名：admin，密码是在engine-setup那一步设置的：
+
+![portal](http://img.blog.csdn.net/20151023210301962)
+
+现在的问题是，我没有机器来装ovirt-node，也就是说我没有可以使用的host，而engine是一个光杆司令。我再看看有没有在单机上把Engine和Node都安装的办法。
+
+
+**Reference:**
+[1] [oVirt 中的存储管理](http://www.ibm.com/developerworks/cn/cloud/library/1209_xiawc_ovirt/)
+[2] [ovirt-node介绍](http://www.ibm.com/developerworks/cn/linux/l-cn-ovirt/)
+[3] [Quick Start Guide](http://www.ovirt.org/Quick_Start_Guide)
+[4] [oVirt Administration Guide](http://www.ovirt.org/OVirt_Administration_Guide)
+[5] [All in one](http://www.ovirt.org/Feature/AllInOne)
+
+\#一些值得看看的博客：
+[1] http://jensd.be/550/linux/install-ovirt-on-centos-7
+[2] http://1337.tips/installing-ovirt-3-5-3-all-in-one-on-my-fitlet-x/
+
+\#20151027
+在重新安装Allinone的时候，遇到可这样的问题
+>Host name is not valid: The following addresses: 127.0.0.1 did not reverseresolve into localhost.localdomain
+
+在#ovirt上问了一下，得到了如下回答：
+>just make sure the machine will have a static ip address and add it to /etc/hosts (or your dns server) with the name you want to use it with, and supply that name when engine-setup asks for "this machine's fqdn"
+
+于是[设置了主机的静态IP](http://blog.csdn.net/johnnycode/article/details/40624403)，并把该ip加入到/etc/hosts中，重新运行engine-setup，将于静态ip对应的提供给相应的设置项。虽然还是有WARN，但最终安装成功。
+
+\#20151118
+今天由于换地方，需要把ovirt-engine的服务器搬到校园里边，启动之后发现不能激活local_storage，又因为实验室的网太渣了，把环境搬到宿舍重新安装，真是费了大劲了。
+
+不过最终找到了解决的办法，就是在关机之前先把host置为**维护**状态，在重启之后再cluster下找到host，将它重新置为**active状态**即可。
