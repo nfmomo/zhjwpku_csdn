@@ -1,0 +1,5 @@
+1. CentOS7
+\#yum install wget
+出现错误No more mirrors to try
+解决办法：\#yum install epel-release
+
