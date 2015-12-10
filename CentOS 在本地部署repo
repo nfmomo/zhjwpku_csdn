@@ -1,0 +1,32 @@
+####老师要求把ovirt-engine环境进行离线安装，就是不给你网络的条件下把ovirt搭好。下面记录一下这个工作的要点：
+
+1 首先，找一台安装了同一版本操作系统的机器，我使用的是虚拟机
+2 安装ovirt-engine使用的源
+> \#yum install http://plain.resources.ovirt.org/pub/yum-repo/ovirt-release36.rpm
+
+3 把需要安装的包使用yumdownloader解析到URLs文件
+
+> \#yumdownloader -q --resolve --urls ovirt-engine ovirt-engine-setup-plugin-allinone > URLs
+
+4 把URLs文件放入一个文件夹中，如ovirt，并进入该文件下载所有安装包
+> \#wget -i URLs
+
+5 把下载到的包用U盘拷贝到不联网的机器上，假设拷到/root/local_yum/文件夹下，所有的安装包都在/root/local_yum/ovirt/中
+
+6 安装yum-plugin-priorities插件，用来设置源的优先级的，只有安装了这个包，repo文件中的priority才有效
+> \#yum install yum-plugin-priorities
+
+7 在/etc/yum.repo.d/中编辑一个名为local.repo的文件，文件中的内容如下：
+>[local_yum]
+>name = local yum repo
+>baseurl= file:///root/local_yum
+>enable = 1
+>gpgcheck = 0
+>priority = 1
+
+8 在local_yum外层的文件夹中用createrepo来建立本地仓库
+>createrepo local_yum
+
+至此本地的仓库就建好了，使用如下命令安装ovirt环境就可以了：
+>yum install ovirt-engine ovirt-engine-setup-plugin-allinone
+
