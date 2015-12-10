@@ -1,0 +1,16 @@
+Ubuntu中使用apt-get install默认会把deb包下载到/var/cache/apt/archives/下，可以通过man apt-get来看到相应的设置：
+>/var/cache/apt/archives/
+>Storage area for retrieved package files. Configuration Item: Dir::Cache::Archives.
+
+如果/var/cache/apt/archives/所在的分区空间不够了，你想把这个默认的下载位置改为你想要的位置，应该怎么办呢？
+
+>1 在你想存放的位置建立一个文件夹
+>>\# mkdir -p /home/zhjwpku/apt-archives
+>
+>2 在/home/zhjwpku/apt-archives/下建立一个partial文件夹
+>>\# mkdir partial
+>
+>3 编辑/etc/apt/apt.conf，这个文件可能并不存在，直接vim就好，添加如下内容（记得用sudo）：
+>>dir::cache::archives /home/zhjwpku/apt-archives;
+
+现在使用apt-get install安装一个软件，所需的deb包应该都在/home/zhjwpku/apt-archives下了。
