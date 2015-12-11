@@ -1,0 +1,85 @@
+*最近在OpenStack的邮件列表里有人问：*
+> 1. how file storage, cinder and swift work if I talk in terms of a personal computer which has OpenStack installed on it
+> 2. Can anyone explain that if I have a hard drive then how cinder uses it for block storage and how swift uses it for object storage
+
+相信不少人对Cinder块存储和Swift对象存储的概念还是有点模糊，接下来就让我们看一篇文章，对Cinder以及Swift进行了一个详细的解释。原文链接：http://www.computerweekly.com/feature/OpenStack-storage-Cinder-and-Swift-explained
+
+`注：我对原文进行了一些精简，只翻译其精华部分，并根据自己理解添加了一些内容`
+
+-----
+**OpenStack**在私有云基础架构行业是一个后起之秀，对于存储，我们用到了**Cinder**以及**Swift**。
+
+服务器虚拟化重塑了数据中心，刺激了x86工作量的增长以及地位的巩固。随着虚拟化基础设施的逐渐成熟，许多组织想要提供私有云，生态圈已经向满足这样的需求而转变。
+
+OpenStack交付了构建整个虚拟云基础设施的所有工具，是一个开源的项目。
+
+它包含了许多模块：虚拟机/计算（Nova），对象存储（Swift），块存储（Cinder），网络（Neutron），dashboard（Horizon），身份认证（Keystone），镜像存储（Glance），用量统计（Ceilometer），项目编排（Heat）。
+
+存储功能由以下三个组件提供：
+
+1. **Swift**	
+>Swift是一个提供了对象存储的子项目，它提供了类似于Amazon S3(Simple Storage Service)的功能
+
+2. **Cinder**
+>Cinder是块存储组件，使用像iSCSI一样的标准协议，支持不同的存储后端，包括Ceph，EMC等
+
+3. **Glance**
+>Glance提供提供了一个虚拟机镜像仓库，可以使用文件系统或Swift作为其后端
+
+下面我们对Cinder和Swift进行一个详细的解释
+
+####OpenStack块存储Cinder
+块存储是虚拟基础架构的一个基本需求。它是存储虚机以及虚机使用的数据的基础。在引入块存储之前，OpenStack虚拟机使用所谓的临时性存储（ephemeral storage），这意味着虚机的内容在它关闭之后会丢失。
+
+Cinder提供了块存储设备的访问以及管理，对于OpenStack的主机，存储以块设备的形式出现，使用iSCSI、Fibre Channel、NFS或其他一些专有协议作为后端的连接。
+
+Cinder的接口指定了一系列的独立的功能，包括创建卷、删除卷、挂载卷等基本功能。还有一些高级功能如扩展卷、快照、从VM镜像克隆或创建卷。
+
+很多磁盘阵列提供商现在提供Cinder block device的支持，如EMC，Hitachi Data Systems，HP，IBM以及NetApp。还有相当一部分在初创公司支持Cinder，包含SolidFire，Nexenta，Pure Storage以及Zadara Storage。
+
+多数提供商支持iSCSI协议，还有一些支持Fibre Channel以及NFS连接。
+
+OpenStack的实现往往会构建大规模的服务器配置，Fibre Channel协议不是最佳的选择。因为随着存储节点规模的增大，硬件以及规模的增大会导致开销和复杂度的急剧上升。
+
+对NFS的支持是在Grizzly版本中引入的。虚拟机卷在NFS存储中被当做独立的文件，这与VMware的NFS存储以及Hyper-V中的VHDs实现是类似的。
+
+> **更多关于OpenStack Storage的参考**
+> - [Definition: Cinder （OpenStack block storage）](http://www.computerweekly.com/feature/OpenStack-storage-Cinder-and-Swift-explained)
+> - [Definition: OpenStack Swift](http://searchcloudstorage.techtarget.com/definition/OpenStack-Swift)
+> - [How OpenStack storage fits in the larger open-source OpenStack picture](http://searchcloudstorage.techtarget.com/tutorial/How-OpenStack-Storage-fits-in-the-larger-open-source-OpenStack-picture)
+> - [Interest in block and object OpenStack storage picks up](http://searchstorage.techtarget.com/news/2240220930/Interest-in-block-and-object-OpenStack-storage-picks-up)
+> - [Working with OpenStack storage: tips on Cinder, Swift and the cloud](http://searchcloudstorage.techtarget.com/essentialguide/Working-with-OpenStack-storage-Tips-on-Cinder-Swift-and-the-cloud)
+
+通过将虚拟磁盘封装为一个文件，系统可以进行snapshots或其他操作，比如在文件层次可以使用这种特性进行克隆。
+
+一些初创公司使用它们自己的协议来支持Cinder，例如Scality和Coraid。也有一些开源的存储解决方案使用Ceph和GlusterFS提供Cinder的支持，Ceph RADOS Block Device （RBD）和本地GlusterFS协议。
+
+Ceph实现很有趣因为它使用的代码已经集成到Linux kernel，这使得配置和支持很容易实现。Ceph也可以被用作Glance VM镜像的后端。
+
+####Openstack对象存储Swift
+Swift为OpenStack集群提供跨节点的分布式大规模对象存储服务。
+
+对象存储是将相应的数据存储为二进制对象，而不是文件或[LUNs](http://www.computerweekly.com/news/1349805/LUN-storage-and-its-role-in-SAN-management)（Logical Unit Number storage），一般通过一条指令就可以存储或检索到整个对象。
+
+在Swift中，对象被物理地存储在对象服务器上（object servers），它是由许多对象服务器，代理服务器，容器服务器以及账户服务器等实体构成的一个“环”上的一个单元。
+
+关于OpenStack Swift我推荐大家读一下这篇博文http://www.cnblogs.com/yuxc/archive/2012/06/22/2558312.html，本文中关于Ring、一致性哈希算法以及最终一致性等思想在该博文中都有详细的介绍，我就不翻了。
+
+####选择OpenStack storage
+显然，对象和块存储有非常不同的特性，这使得他们分别适用存储不同类型的数据。
+
+Swift被设计为高可扩展，最终一致的对象存储，所以它适合存储大卷的数据，例如images，media，以及文件。它与Amazon S3平台类似，适用相同的协议和命令来存储和检索数据。Swift**不适合**存储虚拟机因为它只读取和写入整个对象，并不提供一致性保证（最终一致性）。
+
+而Cinder，提供了**块存储**接口，交付了更传统的存储资源，这使得它在OpenStack环境中对于存储持久性虚拟机拷贝更加适合。我们可以在内置了开源项目如Ceph和GlusterFS的本地服务器上部署Cinder。使用内置的工具，如server logical volume managers或NFS servers，来为OpenStack集群提供存储服务也成为可能。
+
+在需要更具弹性或扩展性的块存储解决方案的地方，可以使用**外部存储阵列**（external storage arrays ）。有很多提供商提供了Cinder的驱动。使用了外部存储阵列来提供Cinder有如下优势：
+>性能和可用性由阵列管理，阵列可以通过自动精简配置，压缩以及数据冗余等特性来提共镜像的保存。
+
+----
+以上就是博文的翻译内容，邮件列表中有个人的回复很有帮助，我复制下来，大家看看：
+
+**Cinder can have different back-ends**. With a Linux approach, Cinder uses LVM2 to carve up local disks so they can be consumed by virtual machines that need to attach to a volume (for data or to boot). A common way for VM's to consume these volumes is via **iSCSI** (see iscsi targets and initiators for more details). **The end result is the VM's talk to the volumes rather than talking to Cinder to get to the data**.
+
+Swift also carves up local disks and stores data on them but the data itself is accessed using an API (similar to dropbox). No exceptions. **VM's don't mount the data on the back-end the way they do with Cinder-managed volumes**, but object storage is instead leveraged for things like user storage, enterprise department data storage (similar to Accounting/Marketing/IT share drive) or as a back-end for services that need a safe place to store files for future use like Glance, Cinder backups, Barbican, etc.
+
+In terms of how the disks are consumed on a local machine, **Cinder allows the VM to mount and format the drive/volume then use however it wants to**. Swift formats it and presents a pre-formatted volume so you can just drop a file and get it later.
