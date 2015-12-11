@@ -1,0 +1,51 @@
+最近一直在看VDI相关的内容，不同的公司有不同的解决方案，比如Amazon的workspaces，Citrix的XenServer，以及VMware的Horizon DaaS，Amazon的AWS免费套餐目前不包括Amazon WorkSpaces，而VMware的Horizon提供7天的免费试用。所以我们一起来体验一下吧。
+
+首先登陆网址：http://www.vmwhorizonair.com/free_trial
+
+试用的虚拟桌面的配置如下：
+|Features |Free Trial| Shared | Dedicated Desktop |
+|:---:|:---:|:---:|:---:|
+|CPU Cores|1|Varies|Varies|
+|Memory(GB)|2|Varies|Varies|
+|Disk Space(GB)|25|Vaires|Varies|
+|OS Type|Windows Server 2008|Windows Server 2008 R2+RDS (Relational Database Services)|Windows 7 Enterprise, Windows XP Pro, Windows Server Workstation, Linux|
+|User Experience|PCoIP Only|Standard(RDP)|Premium(RDP,PCoIP or Blast)|
+
+Horizon Air Free Trial:
+填写一些个人信息，包括邮件地址、姓名、公司等，然后会受到一封邮件，介绍了如何链接到虚拟桌面：
+邮件内容大致如下：
+![这里写图片描述](http://img.blog.csdn.net/20151009201532211)
+
+通过https://freetrial.daas.vca.vmware.com 输入邮件中提供的用户名、密码来登入VMware Horizon Air的桌面门户，界面如下：
+![这里写图片描述](http://img.blog.csdn.net/20151009202502522)
+
+然后下载相应的客户端：
+
+![这里写图片描述](http://img.blog.csdn.net/20151009201703409)
+
+根据自己的电脑来选择相应的安装包，其中IOS的客户端可以直接在App Store里搜索下载。
+
+安装好客户端之后，进行连接的配置
+添加服务器：
+
+![这里写图片描述](http://img.blog.csdn.net/20151009211329256)
+
+登陆：
+
+![这里写图片描述](http://img.blog.csdn.net/20151009211433715)
+
+显示的桌面如下：
+
+![这里写图片描述](http://img.blog.csdn.net/20151009211516559)
+
+我也不知道是我的网速不行还是免费试用版本的原因，用户体验不是很流畅，并且画面质量很一般。
+
+手机上的流程大致是一样的，就不贴图了。
+
+
+####结语：
+VMware 的DaaS给用户提供了一种新的体验，不知道这种模式在未来是否会广泛使用，让我们拭目以待吧。另外，本人正在摸索着使用OpenStack来实现一套VDI的解决方案，任重道远！
+
+
+
+
