@@ -1,0 +1,99 @@
+####**前言**
+今天在PC上搭了一套OpenStack环境，但是创建完实例并绑定FLOATIP之后使用SSH和ping并不能访问到虚拟机，经过一番调研，发现需要对安全组（Security group）进行相应的设置。
+
+设置安全组就相当于打开防火墙端口，允许以ssh和ping的方式连接实例。如果不设置这个，基本上无法访问实例。
+
+下面我就把我安装以及创建实例的过程记录一下。
+
+----
+####**搭建OpenStack**
+首先，需要安装宿主机环境，我使用的是ubuntu-14.04.3-server，安装的过程没什么太多可说的，唯一需要注意的一点就是在制作U盘安装盘的时候**尽量使用Linux的dd命令**，Windows下的UltraISO可能会出现一些问题，具体见我的另一篇博文http://blog.csdn.net/zhjwpku/article/details/49069849
+
+其次，部署OpenStack环境，这里我选择使用[devstack](http://docs.openstack.org/developer/devstack/)来安装，devstack有好多种安装方式，由于我是一台PC环境下进行安装，所以使用[All-In-One Single Machine](http://docs.openstack.org/developer/devstack/guides/single-machine.html)安装方式，大致有几下几个步骤：
+>1. 让你的host使用固定IP而不是DHCP
+>2.  添加一个user，并赋予它sudo权限
+>&nbsp;#adduser stack
+>&nbsp;#echo "stack ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+>3. reboot并使用stack用户登陆
+>4. 下载devstack
+>&nbsp;#git clone https://git.openstack.org/openstack-dev/devstack
+>&nbsp;#cd devstack
+>5. 把devstack/samples/local.conf拷贝到devstack文件夹下
+>6. 关于local.conf的详细配置见：
+>http://docs.openstack.org/developer/devstack/configuration.html
+>7. 这里我们仅对local.conf进行一个最小配置，修改后的文件大致如下：
+&nbsp;&nbsp;[[local|localrc]]
+&nbsp;&nbsp;**FLOATING_RANGE=192.168.1.224/27**
+&nbsp;&nbsp;FIXED_RANGE=10.11.12.0/24
+&nbsp;&nbsp;FIXED_NETWORK_SIZE=256
+&nbsp;&nbsp;**FLAT_INTERFACE=eth0**
+&nbsp;&nbsp;ADMIN_PASSWORD=supersecret
+&nbsp;&nbsp;DATABASE_PASSWORD=iheartdatabases
+&nbsp;&nbsp;RABBIT_PASSWORD=flopsymopsy
+&nbsp;&nbsp;SERVICE_PASSWORD=iheartksl
+&nbsp;&nbsp;SERVICE_TOKEN=xyzpdqlazydog
+>8. 运行./stack.sh，该过程比较漫长，而且可能出现错误，可以再次运行这个脚本来解决。
+
+我的PC所在的子网的CIDR为192.168.8.89/20，我把FLOATING_RANGE设置为192.168.8.224/27，也就是把192.168.8.224-192.168.8.254的IP设置为可用的FLOATING IP。
+网卡接口为**p2p1**，FLAT_INTERFACE=p2p1
+
+安装完成之后有如下提示：
+>This is your host IP address: 192.168.8.89
+>Horizon is now available at http://192.168.8.89/dashboard
+>Keystone is serving at http://192.168.8.89:5000/
+>The default users are admin and demo
+>The password: supersecret
+
+另外如果安装好OpenStack，不小心把服务器重启了，需要执行如下命令来恢复OpenStack的服务：
+>cd devstack
+>./rejoin-stack.sh
+
+---
+####**创建虚拟机**
+**Step1: 访问Dashboard**
+&nbsp;&nbsp;输入用户名admin或demo，密码：supersecret
+
+**Step2: 在你的安全组里打开SSH访问权限**
+
+![rules](http://img.blog.csdn.net/20151013210944710)
+
+**Step3: 创建或导入一个keypair**
+
+![access & security](http://img.blog.csdn.net/20151013212227870)
+
+![create keypair](http://img.blog.csdn.net/20151013212145384)
+
+创建完keypair之后，公钥会注入到创建的实例里边，必须使用私钥登录，私钥的后缀是pem
+如果使用手动导入keypair，需要使用如下命令创建密钥对:
+>ssh-keygen -t rsa -f cloud.key
+
+会生成cloud.key以及对应的公钥cloud.key.pub，我们需要通过Dashboard导入公钥，私钥自己保存。
+
+**Step4: 创建一个Image**
+这里我是从https://www.rdoproject.org/Image_resources下载的ubuntu cloud image，需要注意的一点是使用自带的镜像cirros，不需要使用秘钥来登陆，使用用户名cirros个密码cubswin:)，而Ubuntu没有预设的密码，需要cloud-init这样的工具把ssh公钥注入到虚拟机中（对cloud-init我还不是太了解，还需要进一步学习）。
+
+**Step5: 启动实例**
+
+启动实例的时候需要制定镜像，这里是用的是Step4创建的image。
+
+![launch](http://img.blog.csdn.net/20151013214032693)
+
+选择秘钥，这样再启动的时候就会把key pair的公钥注入到instance里。
+
+![select key](http://img.blog.csdn.net/20151013214240848)
+
+**Step6: 关联一个浮动IP**
+
+![associate float ip](http://img.blog.csdn.net/20151013214522520)
+
+然后，就可以在之前生成私钥的机器上使用ssh对instance进行连接
+
+![ssh -i cloud.key](http://img.blog.csdn.net/20151013214834581)
+
+----
+####**写在最后**
+&nbsp;&nbsp;&nbsp;&nbsp;我感觉搭建这套环境最难的地方就是要搞懂不同机器间是如何连接的以及IP如如何分配的，当安装好OpenStack之后，在宿主机上使用ifconfig查看网络的话并不显示对外的IP，比如我访问Dashboard的地址http://192.168.8.89/dashboard，但是ifconfig给的结果里并没有该IP的任何信息，这块让我废了不少劲，看来网络还是很重的一块，需要努力学习、积累。
+
+&nbsp;&nbsp;&nbsp;&nbsp;另外，如果大家觉得我写的不够详细，推荐大家看一下红帽的rdo关于这块的的文档：
+&nbsp;&nbsp;&nbsp;&nbsp;https://www.rdoproject.org/Running_an_instance
+
