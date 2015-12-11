@@ -1,0 +1,34 @@
+在使用devstack安装好的OpenStack环境上，Launch一个实例默认使用vnc协议来连接，如果想要使用Spice协议来远程连接桌面，需要对nova进行相应的配置。
+
+首先，在宿主机上安装如下包，我使用的Ubuntu14.04：
+>sudo apt-get install libspice-server1
+>sudo apt-get install nova-spiceproxy
+>sudo apt-get install spice-html
+
+然后对/etc/nova/nova.conf进行编辑：
+> [default]
+> vnc_enabled=false
+> [spice]
+> agent_enabled=True&nbsp;&nbsp;&nbsp;&nbsp;//在客户机中安装spice-vdagent
+> enabled=True
+> html5proxy_base_url = http://192.168.8.89:6802/spice_auto.html
+> keymap=en-us
+> server_listen=192.168.8.89
+> server_proxyclient_address=192.168.8.89
+
+下一步就是重启nova的各项服务，这里需要说明一点，如果是手动安装的OpenStack，可以用[其他博文](http://my.oschina.net/crooner/blog/416486)里的方法：
+>cd /usr/bin/;for i in \$(ls nova-*);do sudo service $i restart;done
+
+但我使用的devstack安装的OpenStack，使用上述方法会得到”unrecognized service“的错误提示，所以需要使用devstack重启服务的方法：
+>$screen -x&nbsp;&nbsp;&nbsp;&nbsp;//进入devstack的服务界面，我是在irc上问的，原理还没搞清
+>`Ctrl+a`，释放，按`"`，输入最下一行对应的服务的数字
+>`Ctrl+c`，中断当前的服务，然后up按钮，Enter按钮，重启对应的服务
+
+这一步是比较晦涩的，如果不熟悉DevStack，还是不太容易做对的。
+
+另外需要注意的一点是使用spice最好使用qxl驱动，对qxl驱动进行设置如下：
+![这里写图片描述](http://img.blog.csdn.net/20151018185301804)
+
+![这里写图片描述](http://img.blog.csdn.net/20151018185316092)
+
+增加一个metadata，指定libvirt使用的Driver Options，之后启动就是使用的qxl驱动了。
