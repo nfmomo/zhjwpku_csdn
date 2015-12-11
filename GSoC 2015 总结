@@ -1,0 +1,41 @@
+###Google Summer of Code
+-----------------
+在刚刚过去的Google Summer of Code中，我通过了X.org的final evaluation， 提交了sample codes，并收到了Google给我的转账。真的不得不说，这个项目对本科生或研究生来说是一个不错的体验，不仅能提高对开源项目的认识，还能从谷歌那拿到一笔5500美刀的工资，对于一个大学生来说，拿这笔钱完全可以给自己添置一些新设备了，我准备买一台MBP :)。
+
+这个项目简单来说就是Google出钱，全球比较知名的开源组织向谷歌申请slot（就是席位，比如我在的X.org组织今年可以带5个学生），然后学生选一个或两个自己感兴趣的组织，提交proposal（就是自己想给开源组织做点什么事），然后开源组织觉得你的proposal可以，你就会被选中（当然最终只能在一个组织干活），组织会给你指定一个mentor，这样你们两个就可以结对来完成你的项目。当然，你可能有很多不会的东西，你的mentor会对你进行指导。如果mentor比较忙的话，你还可以向组织的邮件列表或#IRC提问。
+
+这个项目已经有好多年了，可以百度一下其他人对该项目的介绍，我在这给个链接吧：http://www.google-melange.com/gsoc/homepage/google/gsoc2015
+
+--------
+###X.org工作流
+------
+主要用的的工具：
+>git: 版本控制
+>mailing list: 邮件列表
+>IRC: 中继聊天工具，我使用的是XChat
+>pastebin: 交流代码的一个工具
+
+####git
+>配置git
+>>git config --global user.name "Your Name"
+>>git config --global user.email "Your email address"
+>
+>工作流
+>>git add file.c    //你修改过的文件
+>>git commit -s  //-s选项会帮你在patch里加入Signed-off-by:
+>>git format-patch HEAD~1
+>>git send-email --to dri-devel@lists.x.org *.patch
+
+####mailing list & IRC
+X.org使用邮件列表来提交patch，也通过邮件列表来交流想法，比如一个人发了一个patch，其他人可以反驳他或者同意，如果同意，会回复`Reviewed-by: Who <who's email>` 或`Ack`。这样Maintainer就会把patch提交到自己维护的版本里边，并定期向上层的maintainer提供分支。
+
+如果想要实时的聊天，就需要用到IRC了，其实就相当于我们用的QQ，一个channel就相当于一个群，使用/join #dri-devel这样的命令来加入某个频道来参与讨论，我用的客户端是XChat，一些详细的IRC的使用方法大家可以在在网上搜到，在这就不赘述了。
+
+####pastebin
+pastebin是一个方便程序员交流代码的一个工具，我们在IRC上复制代码或粘贴代码虽然不是不可以，但看起来会不太方便。但有了pastebin，你只需要将你的代码拷贝到某个pastebin的服务器上，服务器会给你一个url，你直接把url发送给与你交流的人员，他就可以直接访问这个url来查看你的代码了。我是用的是Debian的pastebinit，在fedora上应该有个fpaste，具体命令:
+>cat file | pastebinit
+
+--------
+###总结
+通过GSoC这个项目，使我清晰的认识了开源组织的工作方式。我的项目是重构两个qemu使用的虚拟显卡驱动——Bochs和Cirrus，三个月的时间，编了N次驱动，换了N次内核，让我对内核有了一个初步的了解，同时认识到自己还有很多东西要学。加油吧！给一个我项目链接，大家如果有兴趣可以看看：
+http://www.google-melange.com/gsoc/proposal/review/student/google/gsoc2015/johnhunter/5629499534213120
