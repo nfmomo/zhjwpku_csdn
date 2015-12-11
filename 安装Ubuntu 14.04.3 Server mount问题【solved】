@@ -1,0 +1,31 @@
+今天在PC上安装Ubuntu 14.04.3 Server，使用UltraISO做了一个U盘镜像，但是在安装的时候遇到了一个问题：
+>**[!!] Detect and mount CD-ROM**
+>Your installation CD-ROM couldn't be mounted. This probably means that the **CD-ROM was not in the drive**. If so you can insert it and try again.
+
+大致意思就是没有CD-ROM没有正常挂载。
+在出现这个画面之前，有个一闪而过的报错信息：
+>mount: mounting /dev/sda on /media failed: Invalid argument
+>umount: can't umount /media: Invalid argument
+>mount: mounting /dev/sda on /media failed: Invalid argument
+>mount: mounting /dev/sda1 on /media failed: Invalid argument
+
+表明挂载设备出现了问题，不过这应该没什么问题，在之后使用`Execute a shell`（或使用**Alt-F2**，Alt-F1回到安装界面）文件系统的时候，看到了/dev/sdb1挂载到了/media，所以上面的mount/umount应该不是什么问题。
+
+我去网上看了一下解决的方法：
+>* 手动创建一个从/media到/cdrom的连接
+>* 使用mount -t auto /dev/sdb1 /cdrom &nbsp;&nbsp;&nbsp;&nbsp; *//这里的设备符号可以在shell中使用`mount`查看或直接查看**/var/log/syslog**中的信息*
+
+然后我使用这两种方法尝试了一下，第一种方法依然报错，第二种方法不再出现Detect and mount CD-ROM的错误，不过出现了如下的错误：
+>[!! Load installer components from CD]
+>There was a problem reading data from CD-ROM. Please make sure it is in the drive. If retrying does not work, you should check the integrity of your CD-ROM.
+
+然后我尝试了并不是用分区，而是将整个块设备挂载到/cdrom，然而这样的命令是错误的。
+于是尝试下面的方法：
+>不使用UltraISO，而是直接使用如下命令制作U盘启动镜像
+>**dd if=ubuntu-14.04.3-server-amd64.iso of=/dev/sdb bs=16M**
+>这里一定要使用整个设备，而不要使用任何分区
+
+这样，再重新安装，发现真的可以了：）
+
+2015/10/22
+反正制作启动盘都用dd命令就好了，又简单又直观。
