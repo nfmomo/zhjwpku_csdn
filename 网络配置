@@ -1,0 +1,3 @@
+####在不同的distro中网卡的配置文件所在位置不同
+>在Ubuntu中或Debian中，网卡配置在/etc/network/interfaces文件
+>而在CentOS中，网卡配置文件在/etc/sysconfig/network-script/目录下
