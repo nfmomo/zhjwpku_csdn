@@ -1,0 +1,105 @@
+今天去腾讯面试，面试官让我用泛型编程实现Stack，由于对template并不熟悉，当时就蒙了，回来赶紧搜了下，发现一篇不错的文章。
+
+----
+实现Stack类模板，实现入栈、出栈，判断栈是否为空，读取栈顶元素等操作。
+
+其代码实现如下：
+
+```
+#include <iostream>
+
+using namespace std;
+
+//定义链表栈类
+template <typename Type>
+class Node {
+public:
+	Type data; //栈存储的元素
+	Node *next; //指向下一个节点的指针
+};
+
+template <typename Type>
+class CStack {
+public:
+	CStack();
+	~CStack();
+
+	void push(Type elem); //进栈
+	void pop();           //出栈
+	bool empty();         //判断栈是否为空
+	Type top();           //获得栈顶元素
+private:
+	Node<Type> m_Top;     //栈顶
+	Node<Type> m_Bottom;  //栈底
+};
+
+/*
+ * 初始化构造一个空数据栈
+ */
+template <typename Type>
+CStack<Type>::CStack() {
+	m_Bottom = new Node<Type>;
+	if (NULL == m_Bottom) {
+		cout << "allocate memory failed!" << endl;
+		exit(0);
+	}
+
+	m_Top = m_Bottom; //数据栈置空
+	m_Top->next = NULL;
+}
+
+/*
+ * 析构函数，释放内存空间
+ */
+template <typename Type>
+CStack<Type>::~CStack() {
+	while (m_Top != m_Bottom) {
+		Node<Type> *p = m_Bottom;
+		m_Bottom = m_Bottom->next;
+		delete p;
+	}
+
+	delete m_Top;
+	m_Top = NULL;
+	m_Bottom = NULL;
+}
+
+template <typename Type>
+bool CStack<Type>::empty() {
+	return m_Top == m_Bottom;
+}
+
+template <typename Type>
+Type CStack<Type>::top() {
+	return m_Top->data;
+}
+
+template <typename Type>
+void CStack<Type>::push(Type element) {
+	Node<Type> *p = new Node<Type>;
+	p->data = element;
+	p->next = NULL;
+	m_Top->next = p;
+	m_Top = p;
+}
+
+template <typename Type>
+void CStack<Type>::pop() {
+	Node<Type> *p = m_Bottom;
+	if (this->empty()) {
+		cout << "stack is empty, can not pop" << endl;
+		exit(0);
+	} else {
+		while (p->next != m_Top) {
+			p = p->next;
+		}
+		p->next = NULL;
+		delete m_Top;
+		m_Top = p;
+	}
+}
+
+```
+
+----
+*原文*：http://blog.csdn.net/p11234/article/details/7864431
