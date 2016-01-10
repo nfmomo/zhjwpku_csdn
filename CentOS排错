@@ -1,5 +1,14 @@
 1. CentOS7
 \#yum install wget
-出现错误No more mirrors to try
-解决办法：\#yum install epel-release
+出现错误`No more mirrors to try`
+解决办法：`#yum install epel-release`
+**EPEL**(Extra Packages for Enterprise Linux)是Fedora的一个特别兴趣组(Special Interest Group)创建、维护并管理一系列高质量的附加安装包，可用于`Red Hat Enterprise Linux (RHEL)`, `CentOS` and `Scientific Linux (SL)`, `Oracle Linux (OL)`。
+
+2. 安装pastebin工具
+首先也要安装epel-release，然后安装fedora版的pastebin
+`#yum install fpaste`
+使用方法：
+`#cat abc.txt | fpaste`
+会输出两个url(一个短的类似`http://ur1.ca/oedl5`, 长的类似`http://paste.fedoraproject.org/309092/52415683/`)，然后在浏览器中访问这两个url中的任意一个就能看到abc.txt中的内容。
+
 
