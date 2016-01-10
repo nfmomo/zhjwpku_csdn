@@ -1,0 +1,18 @@
+在CentOS中命令行没有`qemu-kvm`这个命令，用yum安装提示已经安装最新版的qemu-kvm。
+很奇怪，在`/usr/bin/; /usr/sbin/; /usr/local/bin/; /usr/local/sbin/` 目录下都没有这个命令，用find命令来搜一下：
+> \#find / -type f -name "qemu-kvm"
+
+发现它在`/usr/libexec/` 目录下，然后简历一个软链接到`/usr/bin/`目录下，在`/usr/bin/`目录下输入如下命令：
+> \#ln -s /usr/libexec/qemu-kvm
+> 或
+> \#ln -s /usr/libexec/qemu-kvm qemu-kvm
+
+然后在命令行中就可以使用该命令了。
+
+
+######注： 使用qemu-kvm --help查看帮助的时候，有三个WARNING：
+>######WARNING: Direct use of qemu-kvm from the command line is not supported by Red Hat.
+>######WARNING: Use libvirt as the stable management interface.
+>######WARNING: Some command line options listed here may not be available in future releases.
+
+######直接在command line使用qemu-kvm并不被红帽支持，应使用libvirt的稳定来管理虚拟机。
