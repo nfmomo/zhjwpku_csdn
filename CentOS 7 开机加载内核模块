@@ -1,0 +1,18 @@
+以ceph模块为例：
+>1. #cd /etc/sysconfig/modules/
+>2. #vim ceph.modules
+>3. 在文件中添加如下内容
+>\#！/bin/sh
+>/sbin/modinfo -F filename ceph > /dev/null 2>&1
+>if [ $? -eq 0 ]; then
+>&nbsp;&nbsp;&nbsp;&nbsp;/sbin/modprobe ceph
+>fi
+>4. #chmod 755 ceph.modules  &nbsp;&nbsp;//这一步至关重要
+>5. #reboot
+
+现在重启，在命令行运行
+>\#lsmod | grep ceph
+
+就可以看到ceph模块被加载到系统中 :) 
+
+这只是加载模块的一种方式，后期如果遇到其他方法我会加进来的 ;)
