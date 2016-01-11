@@ -11,4 +11,7 @@
 `#cat abc.txt | fpaste`
 会输出两个url(一个短的类似`http://ur1.ca/oedl5`, 长的类似`http://paste.fedoraproject.org/309092/52415683/`)，然后在浏览器中访问这两个url中的任意一个就能看到abc.txt中的内容。
 
-
+3. scp不能使用
+默认sshd并没有启动，解决方法如下：
+`#sshd-keygen`  Generate sshd host key, 注意不是ssh-keygen
+`#/usr/sbin/sshd` 这里必须使用绝对路径
