@@ -1,0 +1,35 @@
+今天安装了CentOS-7-x86_64-LiveGNOME-1511，安装之后又想在启动的时候默认不启动桌面服务，在网上搜的解决办法如下：
+> \#runlevel
+> N 5 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//表示运行级别为5
+> \#init 3 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//将运行级别设为3，此时桌面服务关闭
+
+运行级别说明：
+>**3** 多用户模式。允许多用户登录系统，是系统默认的启动级别
+>**5** 多用户模式。并且在系统启动后运行X-Window，给出一个图形化的登录窗口
+
+其他运行模式见如下链接：
+http://networking.ctocio.com.cn/tips/498/9398498.shtml
+
+所以，将/etc/inittab中inidefault的运行级别改为3即可关闭桌面服务。
+
+以上方法适用于非systemd系统，在使用systemd的系统中，/etc/inittab中的内容如下：
+>\# inittab is no longer used when using systemd.
+\#
+\# ADDING CONFIGURATION HERE WILL HAVE NO EFFECT ON YOUR SYSTEM.
+\#
+\# Ctrl-Alt-Delete is handled by /usr/lib/systemd/system/ctrl-alt-del.target
+\#
+\# systemd uses 'targets' instead of runlevels. By default, there are two main targets:
+\#
+\# multi-user.target: analogous to runlevel 3
+\# graphical.target: analogous to runlevel 5
+\#
+\# To view current default target, run:
+\# systemctl get-default
+\#
+\# To set a default target, run:
+\# systemctl set-default TARGET.target
+\#
+
+所以我们使用systemctl来关闭开机启动桌面服务，命令如下：
+> **systemctl set-default multi-user.target**
