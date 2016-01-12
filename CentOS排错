@@ -15,3 +15,10 @@
 默认sshd并没有启动，解决方法如下：
 `#sshd-keygen`  Generate sshd host key, 注意不是ssh-keygen
 `#/usr/sbin/sshd` 这里必须使用绝对路径
+
+4. 开机自启动sshd
+`chkconfig sshd on`
+该命令其实是将请求转发给`systemctl enable sshd`
+创建了一个从/etc/systemd/system/multi-user.target.wants/sshd.service 到 /usr/lib/systemd/system/sshd.service 的链接，所以两个命令都是可行的。而第二种方式是systemd中提倡的。
+
+
