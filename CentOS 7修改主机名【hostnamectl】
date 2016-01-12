@@ -1,0 +1,17 @@
+网上的教程多是修改/etc/sysconfig/network中的hostname及/etc/hosts文件，但该方法在CentOS 7中行不通。
+
+典型的一个教程：http://www.virson.cn/1956.html
+
+还有方法让使用`sysctl kernel.hostname=node1`，该命令也只是更改了后文中介绍的transient hostname。
+
+可行的办法是使用hostnamectl命令，该命令可用来查询及改变系统名称（system hostname）:
+>**#hostnamectl set-hostname admin-node**
+
+上述命令把系统名称改为了admin-node，在CentOS 7中亲测可用。
+
+hostname分为三种：
+>1. **pretty hostname**: 也就是比较好看的hostname，用来取悦自己的;)，如设置为“Zhjwpku's Laptop”
+>2. **static hostname**: 用来在启动的时候初始化内核的hostname，保存在/etc/hostname中
+>3. **transient hostname**: 瞬态的主机名，是系统运行时临时分配的主机名，例如使用`hostname node1` 设置的主机名node1就为*transient hostname*
+
+使用`hostnamectl`可以对以上三种主机名进行设置，如不指定则默认将static跟transient同时设定。详细命令使用方法可用`man hostnamectl`来查看。
