@@ -128,7 +128,7 @@ CentOS默认是安装过openssh-server的，如果没有安装，输入：
 
 
 ###*补充：*
-如果在实验过程中所有机器都关机了，那么重启之后Ceph存储默认是不启动的，需要做的工作：
+如果在实验过程中所有机器都关机了，那么重启之后Ceph存储默认不启动的，如果ceph status显示集群错误，需要做的工作：
 >1. 把各个node的IP设置为与之前一样，因为DHCP可能更改机器IP
 >2. #ceph-deploy mon create-initial
 >3. #ceph-deploy osd activate node2:/var/local/osd0  node3:/var/local/osd1
