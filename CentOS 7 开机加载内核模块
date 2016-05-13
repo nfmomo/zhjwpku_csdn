@@ -16,3 +16,9 @@
 就可以看到ceph模块被加载到系统中 :) 
 
 这只是加载模块的一种方式，后期如果遇到其他方法我会加进来的 ;)
+
+**[2016.05.13更新]**
+今天尝试在/etc/modprobe.d/目录下建立nofloppy.conf来禁止floppy模块开机加载，使用blacklist的方式并不能禁掉，最后选择在grub中添加如下代码进行开机禁用:
+> modprobe.blacklist=floppy
+
+not elegant, but it works!
